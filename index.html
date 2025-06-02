@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODYSSEUS | Chatbot com Agentes de IA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Root variables e estilos */
+        :root {
+            --primary: #5d7adb; /* Azul mais suave e natural */
+            --secondary: #2a3b5f; /* Azul profundo mais terroso */
+            --accent: #e069ce; /* Rosa mais suave */
+            --background: #0e1825; /* Azul noite mais natural */
+            --surface: #1e2937; /* Azul escuro médio com tom mais orgânico */
+            --text: #e8eff9; /* Branco levemente azulado para conforto visual */
+            --glow: rgba(93, 122, 219, 0.3); /* Brilho suave do primary */
+            --natural1: #3d5a80; /* Azul oceânico */
+            --natural2: #98c1d9; /* Azul céu suave */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Sora', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Layout Centralizado */
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Background Orgânico */
+        .fluid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 0;
+            background: linear-gradient(40deg, var(--secondary), transparent);
+        }
+
+        /* Blobs */
+        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; animation: blob-float 20s infinite alternate ease-in-out; z-index: -1; transition: all 0.5s ease; }
+        .blob:nth-child(1) { width: 400px; height: 400px; top: 10%; left: -10%; background: var(--natural1); animation-delay: 0s; }
+        .blob:nth-child(2) { width: 300px; height: 300px; top: 40%; right: -5%; background: var(--natural2); animation-delay: 5s; }
+        .blob:nth-child(3) { width: 350px; height: 350px; bottom: 5%; left: 20%; background: var(--primary); animation-delay: 10s; opacity: 0.3; }
+        @keyframes blob-float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, 20px) scale(1.05); } 100% { transform: translate(-20px, 40px) scale(0.95); } }
+
+        /* Header & Nav */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0; margin-bottom: 2rem; }
+        .logo { font-weight: 500; font-size: 1.8rem; color: var(--text); text-decoration: none; position: relative; letter-spacing: -0.5px; }
+        .logo::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, var(--primary), transparent); border-radius: 2px; }
+        nav { display: flex; gap: 1.5rem; }
+        nav a { color: var(--text); text-decoration: none; position: relative; opacity: 0.8; transition: all 0.3s; font-weight: 400; }
+        nav a:hover { opacity: 1; color: var(--primary); }
+        nav a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--primary); border-radius: 1px; transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        nav a:hover::after { width: 100%; }
+        .auth-buttons { display: flex; gap: 0.8rem; }
+        .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+
+        /* Buttons */
+        .btn { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.75rem 1.8rem; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); font-weight: 500; display: inline-block; text-decoration: none; box-shadow: 0 4px 15px var(--glow); text-align: center; position: relative; overflow: hidden; font-size: 1rem; }
+        .btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px var(--glow); }
+        .btn:hover::before { left: 100%; }
+        .btn-secondary { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-secondary:hover { background: rgba(93, 122, 219, 0.1); box-shadow: 0 4px 15px rgba(93, 122, 219, 0.2); }
+
+        /* Hero Section */
+        .hero { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 80vh; padding: 2rem 0; position: relative; overflow: hidden; }
+        .hero-content { position: relative; z-index: 2; max-width: 60%; }
+        .hero-image { position: absolute; top: 0; right: 0; bottom: 0; width: 70%; background-image: url('odybot_geist_dark_1.png'); background-size: contain; background-position: right center; background-repeat: no-repeat; opacity: 0.75; z-index: 1; mask-image: linear-gradient(to left, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%); -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%); }
+        .hero h1 { font-size: 2.8rem; line-height: 1.2; margin-bottom: 1.5rem; max-width: 800px; background: linear-gradient(135deg, var(--text) 30%, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: text-shimmer 8s infinite alternate; font-weight: 600; letter-spacing: -0.5px; }
+        @keyframes text-shimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .hero p { font-size: 1.25rem; max-width: 600px; margin-bottom: 2rem; opacity: 0.9; line-height: 1.7; }
+
+        /* Section Title */
+        .section-title { font-size: 2.2rem; margin-bottom: 2.5rem; text-align: center; color: var(--text); position: relative; font-weight: 500; letter-spacing: -0.5px; }
+        .section-title::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: var(--primary); border-radius: 3px; }
+
+        /* Fluid Cards */
+        .fluid-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; padding: 2rem 0; }
+        .fluid-card { background: var(--surface); padding: 2rem; border-radius: 20px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; height: 100%; }
+        .fluid-card::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, var(--primary), transparent, var(--primary)); z-index: -1; border-radius: 22px; opacity: 0; transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        .fluid-card:hover { transform: translateY(-5px); }
+        .fluid-card:hover::before { opacity: 1; }
+        .fluid-card h3 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary); font-weight: 500; }
+
+        /* Timeline */
+        .process { padding: 5rem 0; position: relative; }
+        .timeline { position: relative; max-width: 800px; margin: 0 auto; }
+        .timeline::before { content: ''; position: absolute; width: 2px; background: linear-gradient(to bottom, var(--primary), var(--accent)); top: 0; bottom: 0; left: 30px; }
+        .timeline-item { display: flex; margin-bottom: 3rem; position: relative; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-number { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; position: relative; z-index: 2; box-shadow: 0 0 15px rgba(93, 122, 219, 0.3); flex-shrink: 0; }
+        .timeline-content { padding-left: 2rem; padding-top: 0.5rem; }
+        .timeline-content h3 { color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .timeline-content p { margin: 0; opacity: 0.9; }
+
+        /* Pricing */
+        .pricing { padding: 5rem 0; text-align: center; }
+        .price-card { background: var(--surface); padding: 3rem; border-radius: 30px; margin-top: 2rem; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); max-width: 600px; margin-left: auto; margin-right: auto; }
+        .price-card::before { content: ''; position: absolute; width: 200px; height: 200px; background: var(--primary); filter: blur(100px); opacity: 0.1; top: -50px; right: -50px; border-radius: 50%; }
+        .price-card h3 { font-size: 1.8rem; margin-bottom: 1.5rem; color: var(--primary); font-weight: 500; }
+        .price-features { list-style: none; margin: 2rem 0; text-align: left; display: grid; gap: 1rem; }
+        .price-features li { position: relative; padding-left: 2rem; }
+        .price-features li::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+
+        /* Contact Section */
+        .contact { padding: 5rem 0; text-align: center; position: relative; }
+        .contact-form { background: var(--surface); padding: 3rem; border-radius: 30px; max-width: 600px; margin: 2rem auto 0; position: relative; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
+        .form-field { margin-bottom: 1.5rem; position: relative; text-align: left; }
+        .form-field input,
+        .form-field textarea { width: 100%; padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(93, 122, 219, 0.2); border-radius: 15px; color: var(--text); transition: all 0.3s; font-family: 'Sora', sans-serif; }
+        .form-field input:focus,
+        .form-field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(93, 122, 219, 0.1); }
+        .form-field label { position: absolute; top: 1rem; left: 1rem; color: rgba(255, 255, 255, 0.6); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; font-size: 0.9rem; }
+        .form-field input:focus + label,
+        .form-field textarea:focus + label,
+        .form-field input:not(:placeholder-shown) + label,
+        .form-field textarea:not(:placeholder-shown) + label { transform: translateY(-1.5rem) translateX(-0.5rem); font-size: 0.8rem; color: var(--primary); }
+        
+        /* Form Status */
+        #formStatus {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            min-height: 20px;
+            transition: opacity 0.3s ease;
+        }
+        #formStatus.success { color: #98c1d9; }
+        #formStatus.error { color: #e069ce; }
+
+        /* Footer */
+        footer { padding: 2rem 0; text-align: center; opacity: 0.8; font-size: 0.9rem; }
+
+        /* Neural network canvas */
+        .neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.10; z-index: 0; }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            nav { display: none; }
+            .timeline::before { left: 30px; }
+            .timeline-item { flex-direction: row; }
+            .contact-form { padding: 2rem; }
+            .btn { width: auto; display: inline-block; padding: 0.75rem 1.5rem; }
+            .fluid-bg { opacity: 0.2; }
+            .section-title { font-size: 1.8rem; }
+            .fluid-cards { grid-template-columns: 1fr; }
+            .hero-content { max-width: 90%; }
+            .hero-image { opacity: 0.4; width: 100%; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .fluid-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="fluid-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+    <canvas class="neural-canvas" id="neuralCanvas"></canvas>
+
+    <div class="container">
+        <header>
+            <a href="#" class="logo">ODYSSEUS</a>
+            <nav>
+                <a href="#recursos">Recursos</a>
+                <a href="#como-funciona">Como Funciona</a>
+                <a href="#planos">Planos</a>
+                <a href="#contato">Contato</a>
+            </nav>
+            <div class="auth-buttons">
+                <a href="http://localhost:3000/app" class="btn btn-sm">Área do Cliente</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Transforme seu atendimento com equipes de agentes de IA</h1>
+                <p>Atendimento inteligente 24/7, com equipes de agentes de IA que trabalham em conjunto para resolver as solicitações dos seus clientes com eficiência e precisão. Libere sua equipe para tarefas estratégicas.</p>
+                <a href="#contato" class="btn">Implementar chatbot</a>
+                <a href="#planos" class="btn btn-secondary">Ver planos</a>
+            </div>
+            <div class="hero-image"></div>
+        </section>
+    </div>
+
+    <section id="recursos">
+        <div class="container">
+            <h2 class="section-title">Recursos Inteligentes</h2>
+            <div class="fluid-cards">
+                <div class="fluid-card">
+                    <h3>Equipes de Agentes</h3>
+                    <p>Chatbots tradicionais são limitados. Nossa solução utiliza equipes de agentes de IA especializados que trabalham em conjunto para resolver problemas complexos, cada um com seu papel específico.</p>
+                </div>
+
+                <div class="fluid-card">
+                    <h3>Ferramentas Avançadas</h3>
+                    <p>Agentes equipados com mais de 15 ferramentas especializadas para gerenciar clientes, lotes, pagamentos, relatórios e muito mais, tudo integrado ao seu sistema existente.</p>
+                </div>
+
+                <div class="fluid-card">
+                    <h3>Aprendizado Contínuo</h3>
+                    <p>Sistema adaptativo que evolui com o uso, aprende com as interações anteriores e se torna cada vez mais eficiente. A IA aprende seu negócio e melhora com o tempo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="como-funciona" class="process">
+        <div class="container">
+            <h2 class="section-title">Como Funciona</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-number">1</div>
+                    <div class="timeline-content">
+                        <h3>Análise de Necessidades</h3>
+                        <p>Entendemos seus fluxos de atendimento atuais e identificamos as oportunidades de automação, integrando o chatbot ao Chatwoot e às suas ferramentas existentes.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-number">2</div>
+                    <div class="timeline-content">
+                        <h3>Implementação Assistida</h3>
+                        <p>Configuramos o sistema de chatbot com equipes de agentes de IA treinados especificamente para seu negócio e conectamos com suas ferramentas e base de dados.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-number">3</div>
+                    <div class="timeline-content">
+                        <h3>Evolução Contínua</h3>
+                        <p>Seu chatbot aprende e se aperfeiçoa a cada interação, aumentando a precisão das respostas e reduzindo a necessidade de intervenção humana.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="planos" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Planos Acessíveis</h2>
+            <div class="price-card">
+                <h3>Chatbot com Equipes de Agentes de IA</h3>
+                <p>Solução completa de atendimento automatizado que se integra perfeitamente ao seu fluxo de trabalho.</p>
+                <ul class="price-features">
+                    <li>Atendimento 24/7 com IA avançada</li>
+                    <li>Equipes de agentes especializados</li>
+                    <li>Integração com Chatwoot e WhatsApp</li>
+                    <li>Acesso a todas as ferramentas do sistema</li>
+                    <li>Suporte técnico especializado</li>
+                    <li>Personalização para seu negócio</li>
+                </ul>
+                <p>Entre em contato para um plano personalizado.</p>
+                <a href="#contato" class="btn">Solicitar demonstração</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="contato" class="contact">
+        <div class="container">
+            <h2 class="section-title">Vamos Conversar</h2>
+            <div class="contact-form">
+                <p>Entre em contato para uma demonstração personalizada ou para saber como nosso chatbot pode ajudar seu negócio.</p>
+                <form id="contactForm">
+                    <div class="form-field">
+                        <input type="text" id="name" name="name" placeholder=" " required>
+                        <label for="name">Nome</label>
+                    </div>
+                    <div class="form-field">
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="form-field">
+                        <input type="tel" id="phone" name="phone" placeholder=" ">
+                        <label for="phone">Telefone</label>
+                    </div>
+                    <div class="form-field">
+                        <textarea id="message" name="message" placeholder=" " rows="4"></textarea>
+                        <label for="message">Como podemos ajudar sua empresa?</label>
+                    </div>
+                    <button type="submit" class="btn">Solicitar Contato</button>
+                    <p id="formStatus"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p> 2025 Odysseus. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Neural Network Canvas Script
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas?.getContext('2d');
+
+        if (canvas && ctx) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 70;
+            const connectionDistance = 150;
+
+            class NeuralParticle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.velocity = { x: (Math.random() - 0.5) * 0.7, y: (Math.random() - 0.5) * 0.7 };
+                    this.color = '#5d7adb';
+                }
+                update() {
+                    this.x += this.velocity.x; this.y += this.velocity.y;
+                    this.velocity.x += (Math.random() - 0.5) * 0.1; this.velocity.y += (Math.random() - 0.5) * 0.1;
+                    this.velocity.x *= 0.98; this.velocity.y *= 0.98;
+                    if (this.x < 0 || this.x > canvas.width) this.velocity.x *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.velocity.y *= -1;
+                }
+                draw() {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color; ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) { particles.push(new NeuralParticle()); }
+
+            function drawConnections() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < connectionDistance) {
+                            ctx.beginPath(); ctx.strokeStyle = `rgba(93, 122, 219, ${1 - distance / connectionDistance})`;
+                            ctx.lineWidth = 0.5; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(particle => { particle.update(); particle.draw(); });
+                drawConnections();
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                if (canvas) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            });
+        }
+
+        // Form Submission
+        const form = document.getElementById('contactForm');
+        const formStatus = document.getElementById('formStatus');
+
+        if (form && formStatus) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                formStatus.textContent = 'Enviando...';
+                formStatus.className = '';
+                const submitButton = form.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = true;
+                
+                // Simula envio do formulário (substitua por sua lógica real)
+                setTimeout(() => {
+                    formStatus.textContent = 'Mensagem enviada com sucesso! Entraremos em contato em breve.';
+                    formStatus.className = 'success';
+                    if (submitButton) submitButton.disabled = false;
+                    form.reset();
+                }, 1500);
+            });
+        }
+
+        // Widget de Chat Chatwoot (ative quando estiver pronto)
+        /*
+        window.chatwootSettings = { 
+            hideMessageBubble: false, 
+            position: 'right',
+            locale: 'pt-BR'
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            var script = document.createElement('script');
+            script.src = 'http://localhost:3000/packs/js/widget.js';
+            script.async = true;
+            document.body.appendChild(script);
+        });
+        */
+    </script>
+</body>
+</html>
